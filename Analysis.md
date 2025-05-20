@@ -25,10 +25,20 @@ Download with wget
       mkdir ../02_NewName
       mv N* ../02_NewName
 
+
+
 ## 3. Extract UMI
 
     mkdir ../03_UMIExtract
-    for FILE in $(ls 12*_R1.fastq.gz); do echo $FILE; sbatch --partition=pibu_el8 --job-name=$(echo $FILE | cut -d'_' -f1)_UMI --time=0-08:00:00 --mem-per-cpu=12G --ntasks=1 --cpus-per-task=1 --output=UMI_$(echo $FILE | cut -d'_' -f1).out --error=UMI_$(echo $FILE | cut -d'_' -f1).error --mail-type=END,FAIL --wrap "cd /data/projects/p495_SinorhizobiumMeliloti/20_Nathalie/02_NewName ;module load UMI-tools/1.0.1-foss-2021a; umi_tools extract --bc-pattern=NNNNNNNNNNNN --stdin=$FILE --stdout=../03_UMIExtract/$(echo $FILE | cut -d'_' -f1)_extracted_R1.fastq.gz --read2-in=$(echo $FILE | cut -d'_' -f1)_R2.fastq.gz --read2-out=../03_UMIExtract/$(echo $FILE | cut -d'_' -f1)_extracted_R2.fastq.gz"; sleep  1; done
+    for FILE in $(ls *_R1.fastq.gz); do echo $FILE; sbatch --partition=pibu_el8 --job-name=$(echo $FILE | cut -d'_' -f1,2,3)_UMI --time=0-08:00:00 --mem-per-cpu=24G --ntasks=1 --cpus-per-task=4 --output=UMI_$(echo $FILE | cut -d'_' -f1,2,3).out --error=UMI_$(echo $FILE | cut -d'_' -f1,2,3).error --mail-type=END,FAIL --wrap "cd /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/02_NewName; module load UMI-tools/1.0.1-foss-2021a; umi_tools extract --bc-pattern=NNNNNNNNNNNN --stdin=$FILE --stdout=../03_UMIExtract/$(echo $FILE | cut -d'_' -f1,2,3)_extracted_R1.fastq.gz --read2-in=$(echo $FILE | cut -d'_' -f1,2,3)_R2.fastq.gz --read2-out=../03_UMIExtract/$(echo $FILE | cut -d'_' -f1,2,3)_extracted_R2.fastq.gz"; sleep  1; done
+
+
+# 3. Concatenate L1 and L2
+
+          mkdir ../04_Concatenated
+        cat WT1_L1_extracted_R1.fastq.gz WT1_L2_extracted_R1.fastq.gz > ../03_Concatenated/WT1_extracted_R1.fastq.gz
+        cat WT1_L1_extracted_R2.fastq.gz WT1_L2_extracted_R2.fastq.gz > ../03_Concatenated/WT1_extracted_R2.fastq.gz
+
 
 ## 4. Check quality
 
