@@ -75,6 +75,26 @@ Download with wget
 
 
 
+# 9. divide gff into proteins and others
+
+    cat GCF_003473485.1_MtrunA17r5.0-ANR_genomic.gff |grep "gene_biotype=p" > Medicago_proteins.gff
+
+    cat GCF_003473485.1_MtrunA17r5.0-ANR_genomic.gff |grep -v "gene_biotype=p" > Medicago_others.gff
+
+# 10. Counts reads with feature counts default parameters
+
+### 10a. count reads to others tRNA and rRNA,etc
+
+    for FILE in $(ls *dedup.bam ); do echo $FILE; sbatch --partition=pshort_el8 --job-name=FC_$(echo $FILE | cut -d'_' -f1,2) --time=0-02:00:00 --mem-per-cpu=64G --ntasks=1 --cpus-per-task=1 --output=FC_$(echo $FILE | cut -d'_' -f1,2).out --error=FC_$(echo $FILE | cut -d'_' -f1,2).error --mail-type=END,FAIL --wrap "module load Subread; featureCounts -p --countReadPairs -t gene -g ID -a /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/00_References/Medicago_others.gff  -o CountsTableMedicago_Others_$(echo $FILE | cut -d'_' -f1,2).txt $FILE -T 8"; sleep  1; done
+
+### 10b.   count reads to proteins
+
+       for FILE in $(ls *dedup.bam); do echo $FILE; sbatch --partition=pshort_el8 --job-name=FC_$(echo $FILE | cut -d'_' -f1,2) --time=0-02:00:00 --mem-per-cpu=64G --ntasks=1 --cpus-per-task=1 --output=FC_$(echo $FILE | cut -d'_' -f1,2).out --error=FC_$(echo $FILE | cut -d'_' -f1,2).error --mail-type=END,FAIL --wrap "module load Subread; featureCounts -p --countReadPairs -t gene -g ID -a /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/00_References/Medicago_proteins.gff  -o CountsTableMedicago_Proteins_$(echo $FILE | cut -d'_' -f1,2).txt $FILE -T 8"; sleep  1; done
+
+### 10b.   count reads to ALL
+
+       for FILE in $(ls *dedup.bam); do echo $FILE; sbatch --partition=pshort_el8 --job-name=FC_$(echo $FILE | cut -d'_' -f1,2) --time=0-02:00:00 --mem-per-cpu=64G --ntasks=1 --cpus-per-task=1 --output=FC_$(echo $FILE | cut -d'_' -f1,2).out --error=FC_$(echo $FILE | cut -d'_' -f1,2).error --mail-type=END,FAIL --wrap "module load Subread; featureCounts -p --countReadPairs -t gene -g ID -a /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/00_References/GCF_003473485.1_MtrunA17r5.0-ANR_genomic.gff  -o CountsTableMedicago_ALL_$(echo $FILE | cut -d'_' -f1,2).txt $FILE -T 8"; sleep  1; done
+
 
 
 
