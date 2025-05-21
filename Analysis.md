@@ -62,11 +62,20 @@ Download with wget
            mkdir ../07_UnmappedReads/
            for FILE in $(ls *_R1_trimmed.fastq.gz ); do echo $FILE; sbatch --partition=pibu_el8 --job-name=$(echo $FILE | cut -d'_' -f1,2)_1STAR --time=1-12:00:00 --mem-per-cpu=128G --ntasks=8 --cpus-per-task=1 --output=$(echo $FILE | cut -d'_' -f1,2)_STAR.out --error=$(echo $FILE | cut -d'_' -f1,2)_STAR.error --mail-type=END,FAIL --wrap "module load STAR/2.7.10a_alpha_220601-GCC-10.3.0; cd /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/05_TrimmedData; STAR --runThreadN 8 --genomeDir /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/00_References --readFilesIn $FILE $(echo $FILE | cut -d'_' -f1,2)_R2_trimmed.fastq.gz --readFilesCommand zcat --outFileNamePrefix $(echo $FILE | cut -d'_' -f1,2)_MappedMedicago --outSAMtype BAM SortedByCoordinate --outReadsUnmapped Fastx --limitBAMsortRAM 5919206202 --limitOutSJcollapsed 5000000; mv $(echo $FILE | cut -d'_' -f1,2)_MappedMedicagoAligned.sortedByCoord.out ../06_MappedMedicago/$(echo $FILE | cut -d'_' -f1,2)_MappedMedicago.bam ; mv $(echo $FILE | cut -d'_' -f1,2)_MappedMedicagoUnmapped.out.mate1 ../07_UnmappedReads/$(echo $FILE | cut -d'_' -f1,2)_UnmappedMedicago_R1.fastq; mv $(echo $FILE | cut -d'_' -f1,2)_MappedMedicagoUnmapped.out.mate2 ../07_UnmappedReads/$(echo $FILE | cut -d'_' -f1,2)_UnmappedMedicago_R2.fastq "; sleep  1; done
 
-# 8. Deduplicate
+# 7. gzip unmapped reads
 
-                    mkdir ../06_Deduplicated/
-                        for FILE in $(ls *.bam); do echo $FILE; sbatch --partition=pibu_el8 --job-name=dedup_$(echo $FILE | cut -d'_' -f1) --time=0-22:00:00 --mem-per-cpu=64G --ntasks=8 --cpus-per-task=1 --output=$(echo $FILE | cut -d'_' -f1)_UMIdedup.out --error=$(echo $FILE | cut -d'_' -f1)_UMIdedup.error --mail-type=END,FAIL --wrap " cd /data/projects/p495_SinorhizobiumMeliloti/20_Nathalie/05_MappedRhizobia; module load UMI-tools/1.0.1-foss-2021a; module load SAMtools/1.13-GCC-10.3.0; samtools index $FILE; umi_tools dedup --extract-umi-method=read_id --stdin=$FILE --stdout=$(echo $FILE | cut -d'_' -f1)_dedup.bam --paired --unpaired-reads=discard --chimeric-pairs=discard --log=$(echo $FILE | cut -d'_' -f1)_dedup.log; mv $(echo $FILE | cut -d'_' -f1)_dedup.* ../06_Deduplicated/"; done
-#samtools sort -o $(echo $FILE | cut -d'.' -f1)_sorted.bam $FILE ; samtools index $(echo $FILE | cut -d'_' -f1)_MappedMedicago_sorted.bam;
+    for FILE in $(ls *.fastq); do echo $FILE; sbatch --partition=pshort_el8 --job-name=gzip$(echo $FILE | cut -d'_' -f1) --time=0-02:00:00 --mem-per-cpu=24G --ntasks=8 --cpus-per-task=1 --output=$(echo $FILE | cut -d'_' -f1)_gzip.out --error=$(echo $FILE | cut -d'_' -f1)_gzip.error --mail-type=END,FAIL --wrap " cd /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/07_UnmappedReads/ ; gzip $FILE"; done
+
+
+# 8. Deduplicate medicago mapped
+
+                    mkdir ../08_Deduplicated/
+                        for FILE in $(ls *.bam); do echo $FILE; sbatch --partition=pibu_el8 --job-name=dedup_$(echo $FILE | cut -d'_' -f1,2) --time=0-22:00:00 --mem-per-cpu=64G --ntasks=8 --cpus-per-task=1 --output=$(echo $FILE | cut -d'_' -f1,2)_UMIdedup.out --error=$(echo $FILE | cut -d'_' -f1,2)_UMIdedup.error --mail-type=END,FAIL --wrap " cd /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/06_MappedMedicago; module load UMI-tools/1.0.1-foss-2021a; module load SAMtools/1.13-GCC-10.3.0; samtools index $FILE; umi_tools dedup --extract-umi-method=read_id --stdin=$FILE --stdout=$(echo $FILE | cut -d'_' -f1)_dedup.bam --paired --unpaired-reads=discard --chimeric-pairs=discard --log=$(echo $FILE | cut -d'_' -f1)_dedup.log; mv $(echo $FILE | cut -d'_' -f1,2)_dedup.* ../08_Deduplicated/"; done
+#samtools sort -o $(echo $FILE | cut -d'.' -f1,2)_sorted.bam $FILE ; samtools index $(echo $FILE | cut -d'_' -f1,2)_MappedMedicago_sorted.bam;
+
+
+
+
 
 
 # 6. index genome Rhizobia
