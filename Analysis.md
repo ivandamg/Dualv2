@@ -95,7 +95,9 @@ Download with wget
 
        for FILE in $(ls *dedup.bam); do echo $FILE; sbatch --partition=pshort_el8 --job-name=FC_$(echo $FILE | cut -d'_' -f1,2) --time=0-02:00:00 --mem-per-cpu=64G --ntasks=1 --cpus-per-task=1 --output=FC_$(echo $FILE | cut -d'_' -f1,2).out --error=FC_$(echo $FILE | cut -d'_' -f1,2).error --mail-type=END,FAIL --wrap "module load Subread; featureCounts -p --countReadPairs -t gene -g ID -a /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/00_References/GCF_003473485.1_MtrunA17r5.0-ANR_genomic.gff  -o CountsTableMedicago_ALL_$(echo $FILE | cut -d'_' -f1,2).txt $FILE -T 8"; sleep  1; done
 
+### 11.   count reads to ALL features in a single file
 
+        sbatch --partition=pshort_el8 --job-name=FC_all --time=0-02:00:00 --mem-per-cpu=64G --ntasks=16 --cpus-per-task=1 --output=FC_all.out --error=FC_all.error --mail-type=END,FAIL --wrap "module load Subread; featureCounts -p --countReadPairs -t gene -g ID -a /data/projects/p495_SinorhizobiumMeliloti/30_DualRNaseq2/00_References/GCF_003473485.1_MtrunA17r5.0-ANR_genomic.gff  -o Final_CountTables_Exp1Time.txt Argon_1_dedup.bam Argon_2_dedup.bam Argon_3_dedup.bam Argon_4_dedup.bam HN_1_dedup.bam HN_2_dedup.bam HN_3_dedup.bam HN_4_dedup.bam NIFH_1_dedup.bam NIFH_2_dedup.bam NIFH_3_dedup.bam NIFH_4_dedup.bam WT_1_dedup.bam WT_2_dedup.bam WT_3_dedup.bam WT_4_dedup.bam -T 16"
 
 
 # 6. index genome Rhizobia
