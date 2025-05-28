@@ -1,5 +1,7 @@
 # RNAseq Axelle _trimmed DATA
 
+Same result as in normal not trimmed data. so not continuated...
+
 
 
 ## 1. Download data
